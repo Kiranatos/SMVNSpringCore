@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xsi:schemaLocation=" http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.0.xsd
+                            http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.0.xsd">
+
+	<!-- byName example -->
+	<bean id="application" class="net.kiranatos.examples.e01xmlautowiring.domain.Application" autowire="byName"/>
+
+	<bean id="applicationUser" class="net.kiranatos.examples.e01xmlautowiring.domain.ApplicationUser" >
+		<property name="name" value="superUser"/>
+	</bean>
+
+
+	<!-- byType example -->
+	<bean id="employee" class="net.kiranatos.examples.e01xmlautowiring.domain.Employee" autowire="byType"/>
+
+	<bean id="employeeAddress" class="net.kiranatos.examples.e01xmlautowiring.domain.EmployeeAddress" >
+            <property name="street" value="112/223, SantaVila"/>
+            <property name="city" value="Nebraska"/>
+	</bean>
+
+
+	<!-- constructor example -->
+	<bean id="performer" class="net.kiranatos.examples.e01xmlautowiring.domain.Performer" autowire="constructor"/>
+
+	<bean id="instrument" class="net.kiranatos.examples.e01xmlautowiring.domain.Instrument" >
+		<property name="name" value="PIANO"/>
+	</bean>
+
+	<!-- default example (autowire="no") -->
+	<bean id="driver" class="net.kiranatos.examples.e01xmlautowiring.domain.Driver" autowire="no">
+		<property name="license" ref="license"/>
+	</bean>
+
+	<bean id="license" class="net.kiranatos.examples.e01xmlautowiring.domain.License" >
+		<property name="number" value="123456ABCD"/>
+	</bean>
+</beans>

@@ -1,0 +1,209 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans  xmlns="http://www.springframework.org/schema/beans"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:context="http://www.springframework.org/schema/context"
+        xmlns:util="http://www.springframework.org/schema/util"
+        xmlns:p="http://www.springframework.org/schema/p"
+        xmlns:c="http://www.springframework.org/schema/c"
+        xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd
+        
+        http://www.springframework.org/schema/util
+        http://www.springframework.org/schema/util/spring-util-3.2.xsd"
+        default-lazy-init="true">  <!-- [XML0802] Поздняя инициализация Lazy Initialization for all beans : no beans will be pre-instantiated  -->
+        
+        <!-- [XML1002] Schemes and Namespaces UTIL: 
+            xmlns:util="http://www.springframework.org/schema/util"
+            http://www.springframework.org/schema/util
+            http://www.springframework.org/schema/util/spring-util-3.2.xsd
+            
+            [XML1003] Schemes and Namespaces p and c
+            xmlns:p="http://www.springframework.org/schema/p"
+            xmlns:c="http://www.springframework.org/schema/c"
+    -->
+        
+    <!-- [XML1000] -->
+    <bean id="helpForTokyo" class="net.kiranatos.core.s01xml.Toyokawa" scope="prototype"/>
+    <bean id="tokyoBean"
+          class="net.kiranatos.core.s01xml.Tokyo">
+        <property name="shops"> 
+            <list> <!-- List or array -->
+                <value>Shinjuku</value> <!-- simple values -->
+                <value>Shibuya</value>
+                <value>Harajuku</value>
+                <value>Ginza</value>
+                <value>Nihonbashi</value>
+                <value>Marunouchi</value>
+                <value>Ikebukuro</value>
+            </list>                        
+        </property>    
+          
+        <constructor-arg index="0"> 
+            <list> <!-- List or array -->
+                <bean class="java.util.Random"/> <!-- inner-beans -->
+                <bean class="java.util.Random"/>
+                <bean class="java.util.Random"/>
+                <bean class="java.util.Random"/>
+                <bean class="java.util.Random"/>                
+                <!-- 
+                <bean class="com.mkyong.common.Person">
+				<property name="name" value="mkyongList" />
+				<property name="address" value="address" />
+				<property name="age" value="28" />
+			</bean>
+                -->
+            </list>
+        </constructor-arg>
+        
+        <property name="oneTown"> 
+            <list> <!-- List or array -->
+                <ref bean="helpForTokyo"/> <!-- other beans -->
+                <ref bean="helpForTokyo"/>
+                <ref bean="helpForTokyo"/>
+                <ref bean="helpForTokyo"/>
+                <ref bean="helpForTokyo"/>
+                <ref bean="helpForTokyo"/>
+            </list>
+        </property>
+        
+        <property name="prefectures"> 
+            <set> <!-- Set -->
+                <value>Aichi Prefecture</value> <!-- simple values -->
+                <value>Aichi Prefecture</value>
+                <value>Akita Prefecture</value>
+                <value>Akita Prefecture</value>
+                <value>Chiba Prefecture</value>
+                <!-- 
+                <value>1</value>
+			<ref bean="PersonBean" />
+			<bean class="com.mkyong.common.Person">
+				<property name="name" value="mkyongSet" />
+				<property name="address" value="address" />
+				<property name="age" value="28" />
+			</bean>
+                -->
+            </set>
+        </property>
+        
+        <property name="exMap"> <!--  -->
+            <map> <!-- Map -->
+                <entry key="JPOP" value-ref="helpForTokyo"/> <!-- Spring понимает Enum поэтому такой записи достаточно для ключа и он вызовет valueOf y Enum -->
+                <entry key="JROCK" value-ref="helpForTokyo"/>
+                <entry key="KPOP" value-ref="helpForTokyo"/>
+                <entry key="KROCK" value-ref="helpForTokyo"/>                
+                <!-- Примеры других вариантов пар-значение:
+                <entry key="" value=""/>                    - key is simple value and value is simple values 
+                <entry key="" value-ref="PersonBean"/>                - key is simple value but value is bean
+                <entry key-ref="" value-ref=""/>            - key is bean and value is bean
+                <entry key=""> <bean class=""/> </entry>    - key is simple value but value is inner bean
+                <entry key="Key 3">
+				<bean class="com.mkyong.common.Person">
+					<property name="name" value="mkyongMap" />
+					<property name="address" value="address" />
+					<property name="age" value="28" />
+				</bean>
+			</entry>
+                -->
+            </map>
+        </property>
+        
+        <constructor-arg index="1"> <null/> </constructor-arg> <!-- Внедрение нуля -->
+        
+        <property name="propertiesMethod">
+            <props>
+                <prop key="admin">admin@nospam.com</prop> <!-- in Properties both key and value are String  -->
+                <prop key="support">support@nospam.com</prop>
+            </props>
+        </property>
+    </bean> <!-- END OF tokyoBean [XML1000] -->
+        
+    <!-- [XML1001] Используем Утилитарный бин из библиотеки Spring -->
+    <!-- Не получается подключить два файла .properties отдeльно в .xml-ях выбрасывает exceptions, почему? не нашёл ответа - как-то связано с инициализацией PropertyPlaceholderConfigurer. + не ясно почему lazy-init-default не влияет на waifu.properties/PropertyPlaceholderConfigurer
+    Поэтому waifu.properties подключил сюда -->
+    <bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+        <property name="locations">
+            <list> <!-- Имена файлов можно задавать через абсолютный или относительный путь -->
+                <value>classpath:core/s01/cities.properties</value> <!-- [XML1001] -->
+                <value>classpath:core/s01/waifu.properties</value> <!-- [XML0401] -->
+                <value>classpath:fileNotFound.properties</value>
+            </list>
+        </property>
+        <property name="ignoreResourceNotFound" value="true" /> <!-- by default this property is FALSE, поэтому выбрасывает Exception если file not found. Тому змінив на true, бо добавив неіснуючий файл для прикладу -->
+	<property name="systemPropertiesModeName" value="SYSTEM_PROPERTIES_MODE_NEVER" /> <!-- 
+        SYSTEM_PROPERTIES_MODE_FALLBACK - By default, eсли ключ не будет найден в файлах *.properties, то Spring будет искать его в Системных Свойствах и Переменных Окружения.
+        SYSTEM_PROPERTIES_MODE_OVERRIDE - значения системы будут просмотрены первыми. Это может быть полезно если оставить возможность переопределять значения свойств объекта через SYSTEM PROPERTIES, которые передаются при запуске приложения, при этом задав их значения по умолчанию в файлах *.properties
+        SYSTEM_PROPERTIES_MODE_NEVER - системные свойства не рассматриваются
+        Deprecated method - need to check alternative solution. -->
+    </bean>
+    <bean id="nagoyaBean" class="net.kiranatos.core.s01xml.Nagoya">        
+        <constructor-arg>
+            <value>${Nagoya_population}</value>
+        </constructor-arg>        
+        <constructor-arg value="${Nagoya_region}"/>
+        <property name="website" value="${Nagoya_website}"/>
+    </bean>
+    <!--    <context:property-placeholder location="classpath:core/s01/waifu.properties"/>
+            <context:property-placeholder location="classpath:core/s01/cities.properties"/> -->
+
+    <!-- [XML1002] Schemes and Namespaces UTIL -->
+    <bean id="iwakuraBean" class="net.kiranatos.core.s01xml.Iwakura">
+        <property name="mathPI">
+            <util:constant static-field="java.lang.Math.PI"/> <!-- [XML1002] позволяет внедрять константы, списки, мапи, наборы свойств как отдельные бины. 
+            [info in the comment didn't check:]
+            <util:list/>,
+            <util:map id="loggerMap">
+                <entry key="INFO" value-ref="consoleEventLogger"/>
+                <entry key="INFO" value-ref="combinedEventLogger"/>
+            </util:map>,
+            
+            <util:properties id="clientProps" location="classpath:client.properties"/>,
+
+            <util:map id="..." map-class="java.util.TreeMap">
+            
+            <util:set/> 
+С помощью этого можно создать отдельный бин и переиспользовать несколько раз. Загрузить файл properties и использовать как бин класса Properties. Для мап можно укзать например класс TreeMap и получить отсортированные значения.
+Все эти бины будут в контейнере и к ним можно будет обращаться либо из кода, либо инжектить в другие бины. -->            
+        </property>        
+    </bean>
+    
+    <!-- [XML1003] Schemes and Namespaces p and c (для сокращения записи injections in c-constructor and p-properties/setters)-->
+    <bean id="helpForYokote1" class="net.kiranatos.core.s01xml.Daisen"/>
+    <bean id="helpForYokote2" class="net.kiranatos.core.s01xml.Ugo"/>
+    <bean id="yokoteBean" class="net.kiranatos.core.s01xml.Yokote"
+    c:region="Akita Prefecture" 
+    c:area="693"
+    c:cityOne-ref="helpForYokote1"
+    p:population="89574"
+    p:localEvent="Kamakura Festival"
+    p:cityTwo-ref="helpForYokote2"/> <!-- "-ref" for bean injection -->
+    
+    <!-- [XML1004] Автоматическое связывание - функция контекста, tell Spring to find automatically the needed beans & inject them. There are 3 types:
+    - by name
+    - by type
+    - by constructor type
+    (Использовать в основном для beans injection with уникальными именем или классом) Не очень желательно использовать, так как можно легко запутаться в именах и классах, которые могут подходит в разн.местах.
+    Ограничения: can't be used with primitives, String and class direct reference for a bean has higher priority over autowire
+    <bean id="employee" class="net.kiranatos.examples.e01xmlautowiring.domain.Employee" autowire="byType"/>
+    byType       - Bean class in property
+    byName       - Property name
+    constructor  - Bean class in constructor
+    пример использования ищи в разделе examples
+    -->
+        
+
+</beans>
+
+
+            
+            
+ <!-- 
+ <ref local="MLK_JR"/>  ????
+ 
+  <property name="granularityPeriod"> в сеттере указать бин-ссылку на класс, который тут же внедрить через конструктор
+    <bean class="java.lang.Float">
+      <constructor-arg value="1000" />
+    </bean>
+  </property>
+-->

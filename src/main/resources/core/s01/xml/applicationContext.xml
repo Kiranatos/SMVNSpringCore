@@ -1,0 +1,221 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans  xmlns="http://www.springframework.org/schema/beans"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns:context="http://www.springframework.org/schema/context"
+        xsi:schemaLocation="http://www.springframework.org/schema/beans
+        http://www.springframework.org/schema/beans/spring-beans.xsd
+        http://www.springframework.org/schema/context
+        http://www.springframework.org/schema/context/spring-context.xsd">
+    <!-- default-lazy-init="true">  [XML0802] Поздняя инициализация Lazy Initialization for all beans : no beans will be pre-instantiated  -->
+   
+    <!-- Пример подключения внешних файлов
+    <context:property-placeholder location="classpath:s01/waifu.properties"/>
+    <import resource="BeansForMySQL.xml"/>
+    -->
+    
+
+    
+    <!-- [XML0101] -->
+    <bean id="yandereBean"
+          class="net.kiranatos.core.s01xml.YandereWaifu"> <!-- создается бин-объект, через пустой конструктор по умолчанию -->
+    </bean>
+    
+    <!-- [XML0102] 
+    id - формальный XML атрибут, до Spring 3 можно было только валидные символы. Только одно значение.
+    name - любые символы, разделённые " ", "," или ";". Осн.имя первое(undereWaifuBeanViaName), остальные имена - алиасы бина. 
+            (Это может понадобится например если класс выполняет каких-то 2 действия и в разных местах проекта исп. разные 
+            имена-алиасы, а в будущем этот класс придётся разделить - тогда исправить нужно будет только XML, т.к. исп.имена в проекте разные)
+    <alias name = "aaa" alias = "bbb"/> - можно еще подключить алиас отдельным тегом (как и зачем не пробовал)
+    -->
+    <bean id="undereWaifuBean" name="undereWaifuBeanViaName uWBVN wifeUndere, undereWaifu, BeanundereWaifu; BeanUndere"
+          class="net.kiranatos.core.s01xml.UndereWaifu">         
+    </bean>
+    
+    <!-- [XML0201] -->
+    <bean id="tsundereBean"
+          class="net.kiranatos.core.s01xml.TsundereWaifu"> 
+        <constructor-arg ref="yandereBean"/> <!-- указано использовать конструктор со ссылкой на другой объект -->
+    </bean>
+    
+    <!-- [XML0301] -->
+    <bean id="kuudereBean"
+          class="net.kiranatos.core.s01xml.KuudereWaifu">
+        <constructor-arg value="meow meow"/> <!-- указано использовать конструктор с параметром строкой -->
+        <property name="imouto" ref="tsundereBean"/> <!-- указано использовать сеттер with object (чтобы проинжектить бин). 
+spring знает о верблюжей записи и о сеттерах, поэтому метод setMusic то же самое что и name="music" -->
+        <property name="years" value="13"/> <!-- указано использовать сеттер with int value. -->
+        <!-- Сначала вызывается конструктор, потом property - это важно помнить, если в обоих местах одна и та же переменная - последнее значение она получит от property -->        
+        <property name="garem"> <!-- указано использовать сеттер List -->
+            <list>
+                <ref bean="yandereBean"/>
+                <ref bean="tsundereBean"/>
+                <ref bean="kuudereBean"/>
+                <ref bean="dandereBean"/>
+                <ref bean="himedereBean"/>
+                <ref bean="kamidereBean"/>
+                <ref bean="deredereBean"/>
+            </list>
+        </property>
+    </bean>
+    
+    <!-- [XML0401] Внедряем объект, using file musicPlayer.properties -->
+    <!-- <context:property-placeholder location="classpath:core/s01/waifu.properties"/> Этот файл подключен в applicationContext02.xml [XML1001] - читать там -->
+    <bean id="dandereBean"
+          class="net.kiranatos.core.s01xml.DandereWaifu">
+        <property name="imouto" ref="kuudereBean"/>
+        <!-- получение значений из файла: -->
+        <property name="phrase" value="${DandereWaifu.phrase}"/>
+        <property name="years" value="${DandereWaifu.years}"/>
+        <property name="size" value="${Waifu.size}"/>
+    </bean>
+        
+    <!-- [XML0501] -->
+    <bean id="himedereBean"
+          class="net.kiranatos.core.s01xml.Himedere"
+          scope="prototype"> <!-- указанo, для того чтобы создавались разные объекты -->
+     <!-- scope="singleton"> можно указать, но незачем, т.к. бины и так синглтоны 
+        "request" - For web-application. New bean is created only for the time of processing the request.
+        "session" - For web-application. Bean is alive as long as there's HTTP session.
+        "global-session" - For web-application. Bean is alive as long as there's global HTTP session.
+        -->
+    </bean>    
+    
+    <!-- [XML0601] init-method вызывается при инициализации бина, перед тем как отдать объект пользователю или в код программы,
+    destroy-method вызвается при уничтожении бина, при завершении приложения,  -->
+    <bean id="deredereBean"
+          class="net.kiranatos.core.s01xml.Deredere"
+          init-method="doMyInit"
+          destroy-method="doMyDestroy">
+   <!-- Модификатор доступа методов может быть любой: private, public, protected
+        Тип возвращаемого значения - любой, но в основном void т.к. нет возможности получить возвр.значение.
+        Название метода любое.
+        Аргуметы методов: НЕ ДОЛЖНЫ принимать на вход никакие аргументы.
+        init-method может быть полезен при проверке например доступности файла на запись и его существования
+        destroy-method могжет быть полезен для дозаписи в файл при закрытии программы. Вызывается при context.close(). 
+        
+        Для бинов со scope="prototype" Spring  не вызывает destroy-method !!! -->
+    </bean>
+    
+    <!-- [XML0701] factory-method основан на патерне Фабричный метод, когда 
+    объект класса получаем из метода getLovelyKamidereWaifu, а не из конструктора -->
+    <bean id="kamidereBean"
+          class="net.kiranatos.core.s01xml.Kamidere"
+          factory-method="getLovelyKamidereWaifu">
+        <!-- Т.к. конструктор приватный, то метод должен быть статический.
+        
+        Примечание: т.к. тут scope="singleton" по умолчанию, то и бин всегда один, 
+        даже если метод getLovelyKamidereWaifu возвращает каждый раз новый объкт. Дело в том что Спринг
+        вызывает метод getPolandMusic только один раз и потом хранит ссылку на полученный объект  -->
+    </bean>
+    
+    
+    
+    <!-- 2 способа сделать DI: constructor or setters -->
+    <!-- [XML0202] Внеедрение через Конструкторы:
+        1) по умолчанию внедрение в конструктор происходит по порядку записи
+        2) но если нужно, можно указать порядок в конструкторе index="0"
+        3) если все типы параметров в конструкторе разные, то порядок не важен - Spring поймёт, что куда внедрять. [НЕ СРАБОТАЛО]
+        4) можно указать внедрение по типам явно. Например если String=1 и int=1
+        5) можно указать внедрение по именам аргументов в конструкторе. 
+            Но это работает только если включены дебаг-символы при компиляции приложения. 
+            Spring через Reflection вставит значения. На продакшн-коде это делать нельзя.
+        6) внедрение ссылки на другой бин
+        7) внедрение внутриннего бин
+    -->
+    <bean id="mayadereBean01"
+          class="net.kiranatos.core.s01xml.MayadereWaifu"> 
+        <constructor-arg value="16"/> <!-- 1) -->
+        <constructor-arg value="Diva"/>
+        <constructor-arg value="Blood+"/>
+        <constructor-arg value="true"/>
+    </bean>
+    <bean id="mayadereBean02"
+          class="net.kiranatos.core.s01xml.MayadereWaifu"> 
+        <constructor-arg index="3" value="true"/> <!-- 2) -->
+        <constructor-arg index="2" value="To LOVE-Ru"/>        
+        <constructor-arg index="0" value="18"/> 
+        <constructor-arg index="1" value="Konjiki no Yami"/>        
+    </bean>
+    <!-- 3) -->
+    <!-- <bean id="mayadereBean03"
+          class="net.kiranatos.core.s01xml.MayadereWaifu"> 
+        <constructor-arg value="true"/>         
+        <constructor-arg value="20"/> 
+        <constructor-arg value="Jellal Fernandes"/>
+    </bean> -->
+    <bean id="mayadereBean04"
+          class="net.kiranatos.core.s01xml.MayadereWaifu">         
+        <constructor-arg type="java.lang.Boolean" value="true"/> <!-- 4) -->
+        <constructor-arg type="java.lang.StringBuilder" value="Dakara Boku wa, Ecchi ga Dekinai"/>        
+        <constructor-arg type="java.lang.Integer" value="11"/> 
+        <constructor-arg type="java.lang.String" value="Iria Fukumune"/>  
+    </bean>
+    <bean id="mayadereBean05"
+          class="net.kiranatos.core.s01xml.MayadereWaifu">         
+        <constructor-arg name="isFree" value="true"/> <!-- 5) -->        
+        <constructor-arg name="years" value="9"/> 
+        <constructor-arg name="name" value="Kiritsugu Emiya"/>
+    </bean>
+    <bean id="mayadereBean06"
+          class="net.kiranatos.core.s01xml.MayadereWaifu"> 
+        <constructor-arg ref="undereWaifuBean"/> <!-- 6) порядок не важен, т.к. pring поймёт, что куда внедрять по типу -->
+        <constructor-arg ref="kamidereBean"/> 
+    </bean>
+    <bean id="mayadereBean07"
+          class="net.kiranatos.core.s01xml.MayadereWaifu"> 
+        <!-- 7) inner bean - виден там где он определён, поэтому id и name не помогут достучатся до бина -->
+        <constructor-arg> 
+            <bean class="java.util.Date"/>
+        </constructor-arg>        
+        
+        <!-- Аналогично, можно внедрять inner bean в сеттеры
+        <property name="name">
+            <bean class="java.util.Date"/>
+        </property> -->        
+    </bean>
+    
+    
+    <!-- [XML0800] Наследование Определений Бинов - может быть использована, когда классы имеют похожие параметры/конфигурации/определения -->
+    <!-- Наследование Определений НЕ РАВНО наследованию классов. Классы наследуемых бинов могут быть никак не связаны друг с другом.
+        И наоборот наследуемые классы не объязательно должны иметь наследуемые определения бинов. -->
+    <bean id="Этот бин нигде не используется, только для примера чтобы показать, что абстрактный бин также может мапится на класс, хотя это не объязательно"
+          abstract="true" class="net.kiranatos.core.s01xml.YandereWaifu"/>
+    <bean id="abstractBean"
+          abstract="true"> <!-- <-указывает Spring-y что создавать бин не нужно, т.к. он абстрактный -->
+        <constructor-arg value="nya nya nya "/>
+    </bean>    
+    <bean id="bodereBean"
+          class="net.kiranatos.core.s01xml.BodereWaifu">
+        <constructor-arg value="шльоп-шльоп "/>
+        <constructor-arg value="666"/>
+    </bean>
+    <bean id="hinedereBean"
+          class="net.kiranatos.core.s01xml.HinedereWaifu"
+          parent="bodereBean"> <!-- все что отсутствует в бине - будет подтянуто от родителя. Класс родителя может быть даже абстрактным -->
+          <constructor-arg value="true"/>
+    </bean>
+    <bean id="coodereBean"
+          class="net.kiranatos.core.s01xml.CoodereWaifu"
+          parent="abstractBean">        
+        <constructor-arg value="55"/>
+    </bean>
+    
+    
+    <!-- [XML0801] Зависимость бинов Bean Dependency. Например несвязанные никак два класа бинов.  -->
+    <bean id="utsudereBean"
+          class="net.kiranatos.core.s01xml.UtsudereWaifu" 
+          depends-on="coodereBean,hinedereBean,bodereBean"> <!-- бин будет создаваться/инициализуроваться только после создания
+ связанных бинов "coodereBean,hinedereBean,bodereBean" -->
+    </bean>
+    
+    <!-- [XML0802] Поздняя инициализация бина Lazy Initialization  -->
+    <bean id="shundereBean"
+          class="net.kiranatos.core.s01xml.ShundereWaifu" 
+          lazy-init="true"> <!-- инициализация не произойдет, пока не запросим бин через метод .getBean. Но это естественно не сработает в том случае если 
+          другой бин запросит ссылку на этот бин. -->
+    </bean>
+    
+    <!-- 2-я часть конспекта(продолжение) :  -->  
+    <import resource="applicationContext02.xml"/>
+
+</beans>
